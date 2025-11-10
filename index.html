@@ -261,15 +261,18 @@ function practiceLine(i){
   };
 
   rec.onresult = (e) => {
+    // Reiniciar transcripts
     let interimTranscript = '';
+    let finalTranscript = '';
     
-    // Procesar todos los resultados
-    for (let i = 0; i < e.results.length; i++) {
+    // Procesar SOLO los resultados nuevos para evitar duplicados
+    for (let i = e.resultIndex; i < e.results.length; i++) {
       const transcript = e.results[i][0].transcript;
       if (e.results[i].isFinal) {
         fullTranscript += transcript + ' ';
+        finalTranscript = fullTranscript;
       } else {
-        interimTranscript += transcript;
+        interimTranscript = transcript;
       }
     }
     
