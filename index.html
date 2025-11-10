@@ -1,155 +1,482 @@
 <!doctype html>
 <html lang="es">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Conversation Practice — Meeting at the University</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conversation Practice</title>
 <style>
-  body { font-family: system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial; max-width:900px; margin:28px auto; padding:20px; color:#111; background:#fdfdfd;}
-  h1 { margin-bottom:8px; }
-  p.lead { color:#444; margin-top:0; }
-  .controls { display:flex; gap:12px; margin:12px 0 24px; align-items:center; flex-wrap:wrap; }
-  label { font-size:0.9rem; color:#333; }
-  select, button, input[type=range] { padding:6px 8px; font-size:0.95rem; }
-  .conv { border-radius:10px; padding:12px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.06); }
-  .line { padding:12px; border-bottom:1px solid #eee; }
-  .speaker { font-weight:600; color:#0a58ca; margin-bottom:4px; }
-  .english { font-size:1.05rem; margin-bottom:4px; }
-  .phonetic { font-size:0.9rem; color:#555; margin-bottom:2px; font-style:italic; }
-  .spanish { font-size:0.95rem; color:#333; }
-  .buttons { margin-top:8px; display:flex; gap:10px; align-items:center; }
-  button { border-radius:8px; border:1px solid #ddd; background:#fff; cursor:pointer; padding:6px 10px; }
-  button:active { transform:translateY(1px); }
-  .result { margin-top:6px; font-weight:600; }
-  footer { margin-top:20px; font-size:0.85rem; color:#666; }
+  body { 
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f8f9fa;
+  }
+  h1 { 
+    color: #2c3e50;
+    margin-bottom: 10px;
+  }
+  .lead { 
+    color: #666;
+    margin-bottom: 30px;
+  }
+  .line { 
+    background: white;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .speaker { 
+    font-weight: bold;
+    color: #0066cc;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  .english { 
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #000;
+  }
+  .phonetic { 
+    color: #888;
+    font-style: italic;
+    margin-bottom: 8px;
+  }
+  .spanish { 
+    color: #555;
+    margin-bottom: 12px;
+  }
+  .buttons { 
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  button { 
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #0066cc;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+  }
+  button:hover { 
+    background: #0052a3;
+  }
+  button:active { 
+    transform: scale(0.98);
+  }
+  .result { 
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  .transcript-box {
+    background: #f0f8ff;
+    border: 2px solid #0066cc;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 10px;
+    min-height: 60px;
+    font-size: 1.1rem;
+    color: #333;
+    font-style: italic;
+  }
+  .listening {
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  footer { 
+    text-align: center;
+    color: #666;
+    margin-top: 40px;
+    font-size: 0.9rem;
+  }
 </style>
 </head>
 <body>
-  <h1>Meeting at the University</h1>
+  <h1>🎓 Meeting at the University</h1>
   <p class="lead">Pulsa 🎧 para escuchar, 🎙️ para practicar tu pronunciación. El sistema compara tu transcripción con la frase original.</p>
 
-  <div class="conv" id="conversation"></div>
+  <div id="conversation"></div>
 
-  <footer>🎤 Usa Google Chrome o Edge para practicar. La puntuación es estimada según coincidencia de palabras, no pronunciación exacta.</footer>
+  <footer>🎤 Usa Google Chrome o Edge para practicar. La puntuación es estimada según coincidencia de palabras.</footer>
 
 <script>
 const lines = [
-  {speaker:'Sara', english:'Hi! Is this seat taken?', phonetic:'Jái, is dis sít téiken?', spanish:'¡Hola! ¿Está ocupado este asiento?'},
+  {speaker:'Sara', english:'Hi! Is this seat taken?', phonetic:'Jái, is dis síit téiken?', spanish:'¡Hola! ¿Está ocupado este asiento?'},
   {speaker:'Emily', english:'Oh, no, go ahead!', phonetic:'Ou, nóu, góu ajéd!', spanish:'¡Oh, no, adelante!'},
-  {speaker:'Sara', english:'Thanks! I’m Sara, by the way.', phonetic:'Zánks, áim Sára, bai de wéy.', spanish:'Gracias, soy Sara, por cierto.'},
-  {speaker:'Emily', english:'Nice to meet you, Sara! I’m Emily.', phonetic:'Náis tu mítiu, Sára! Áim Émili.', spanish:'Encantada de conocerte, Sara. Soy Emily.'},
-  {speaker:'Sara', english:'Nice to meet you too! Are you a first-year student?', phonetic:'Náis tu mítiu tú! Ar yu a férst yíer stúdent?', spanish:'¡Encantada también! ¿Eres estudiante de primer año?'},
-  {speaker:'Emily', english:'Yes, I am! I’m studying psychology. What about you?', phonetic:'Yés, ai ám! Áim stádiiing saicóloyí. Juat abáut yú?', spanish:'¡Sí! Estoy estudiando psicología. ¿Y tú?'},
-  {speaker:'Sara', english:'I’m studying education. This is my first week here.', phonetic:'Áim stádiiing edukiéishon. Dis is mai férst uíik jíer.', spanish:'Estoy estudiando educación. Esta es mi primera semana aquí.'},
+  {speaker:'Sara', english:'Thanks! I am Sara, by the way.', phonetic:'Zánks, áim Sára, bai de wéy.', spanish:'Gracias, soy Sara, por cierto.'},
+  {speaker:'Emily', english:'Nice to meet you, Sara! I am Emily.', phonetic:'Náis tu mítiu, Sára! Áim Émili.', spanish:'Encantada de conocerte, Sara. Soy Emily.'},
+  {speaker:'Sara', english:'Nice to meet you too! Are you a first year student?', phonetic:'Náis tu mítiu túu! Ar yu a férst yíer stúdent?', spanish:'¡Encantada también! ¿Eres estudiante de primer año?'},
+  {speaker:'Emily', english:'Yes, I am! I am studying psychology. What about you?', phonetic:'Yés, ai ám! Áim stádiing saicóloyí. Juat abáut yú?', spanish:'¡Sí! Estoy estudiando psicología. ¿Y tú?'},
+  {speaker:'Sara', english:'I am studying education. This is my first week here.', phonetic:'Áim stádiing edukiéishon. Dis is mai férst uíik jíer.', spanish:'Estoy estudiando educación. Esta es mi primera semana aquí.'},
   {speaker:'Emily', english:'Same here! Everything feels so new and exciting.', phonetic:'Séim jíer! Évryzing fíils sóu niú and exáitin.', spanish:'¡Igual! Todo se siente tan nuevo y emocionante.'},
   {speaker:'Sara', english:'Totally! We should grab a coffee sometime.', phonetic:'Tóurali! Wi shud gráb a cófi somtaim.', spanish:'¡Totalmente! Deberíamos tomar un café algún día.'},
-  {speaker:'Emily', english:'I’d love that! Let’s exchange numbers.', phonetic:'Aíd lóv dát! Léts exchéinsh nambers.', spanish:'¡Me encantaría! Intercambiemos números.'}
+  {speaker:'Emily', english:'I would love that! Let us exchange numbers.', phonetic:'Aíd lóv dát! Léts exchéinsh nambers.', spanish:'¡Me encantaría! Intercambiemos números.'}
 ];
 
 const convEl = document.getElementById('conversation');
+
 function renderConversation(){
-  convEl.innerHTML='';
-  lines.forEach((line,i)=>{
-    const div=document.createElement('div');
-    div.className='line';
-    div.innerHTML=`
-      <div class="speaker">${line.speaker}</div>
-      <div class="english">${line.english}</div>
-      <div class="phonetic">${line.phonetic}</div>
-      <div class="spanish">${line.spanish}</div>
-      <div class="buttons">
-        <button onclick="playLine(${i})">🎧 Play</button>
-        <button onclick="practiceLine(${i})">🎙️ Practice</button>
-        <span class="result" id="result-${i}"></span>
-      </div>`;
+  lines.forEach((line, i) => {
+    const div = document.createElement('div');
+    div.className = 'line';
+    
+    const speaker = document.createElement('div');
+    speaker.className = 'speaker';
+    speaker.textContent = line.speaker;
+    
+    const english = document.createElement('div');
+    english.className = 'english';
+    english.textContent = line.english;
+    
+    const phonetic = document.createElement('div');
+    phonetic.className = 'phonetic';
+    phonetic.textContent = line.phonetic;
+    
+    const spanish = document.createElement('div');
+    spanish.className = 'spanish';
+    spanish.textContent = line.spanish;
+    
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.className = 'buttons';
+    
+    const playBtn = document.createElement('button');
+    playBtn.textContent = '🎧 Play';
+    playBtn.onclick = () => playLine(i);
+    
+    const practiceBtn = document.createElement('button');
+    practiceBtn.textContent = '🎙️ Practice';
+    practiceBtn.onclick = () => practiceLine(i);
+    
+    const resultSpan = document.createElement('span');
+    resultSpan.className = 'result';
+    resultSpan.id = 'result-' + i;
+    
+    const transcriptBox = document.createElement('div');
+    transcriptBox.className = 'transcript-box';
+    transcriptBox.id = 'transcript-' + i;
+    transcriptBox.style.display = 'none';
+    
+    buttonsDiv.appendChild(playBtn);
+    buttonsDiv.appendChild(practiceBtn);
+    buttonsDiv.appendChild(resultSpan);
+    
+    div.appendChild(speaker);
+    div.appendChild(english);
+    div.appendChild(phonetic);
+    div.appendChild(spanish);
+    div.appendChild(buttonsDiv);
+    div.appendChild(transcriptBox);
+    
     convEl.appendChild(div);
   });
 }
+
 renderConversation();
 
-let voices=[];
+let voices = [];
 function loadVoices(){
-  voices=speechSynthesis.getVoices();
+  voices = speechSynthesis.getVoices();
 }
-speechSynthesis.onvoiceschanged=loadVoices;
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+loadVoices();
 
 function playLine(i){
-  const line=lines[i];
+  const line = lines[i];
   speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(line.english);
-  u.lang='en-US';
-  u.rate=0.9;
-  const femaleVoice=voices.find(v=>/female|woman/i.test(v.name)||/Jenny|Google US|en-US/i.test(v.name));
-  if(femaleVoice) u.voice=femaleVoice;
-  speechSynthesis.speak(u);
+  const utterance = new SpeechSynthesisUtterance(line.english);
+  utterance.lang = 'en-US';
+  utterance.rate = 0.9;
+  const voice = voices.find(v => v.lang.includes('en-US') || v.lang.includes('en_US'));
+  if(voice) utterance.voice = voice;
+  speechSynthesis.speak(utterance);
 }
 
-// speech recognition
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recognizing=false;
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 function practiceLine(i){
   if(!SpeechRecognition){
-    alert('Tu navegador no soporta SpeechRecognition. Usa Chrome o Edge.');
+    alert('Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.');
     return;
   }
 
+  const resultEl = document.getElementById('result-' + i);
+  const transcriptBox = document.getElementById('transcript-' + i);
+  const practiceBtn = document.querySelector(`#conversation .line:nth-child(${i+1}) button:nth-child(2)`);
+  
+  // Si ya está grabando, detener
+  if(window.activeRecognition && window.activeRecognitionIndex === i){
+    window.activeRecognition.stop();
+    practiceBtn.textContent = '🎙️ Practice';
+    practiceBtn.style.background = '#0066cc';
+    window.activeRecognition = null;
+    window.activeRecognitionIndex = null;
+    return;
+  }
+  
+  // Detener cualquier reconocimiento activo
+  if(window.activeRecognition){
+    window.activeRecognition.stop();
+    const oldBtn = document.querySelector(`#conversation .line:nth-child(${window.activeRecognitionIndex+1}) button:nth-child(2)`);
+    if(oldBtn){
+      oldBtn.textContent = '🎙️ Practice';
+      oldBtn.style.background = '#0066cc';
+    }
+  }
+  
   const rec = new SpeechRecognition();
-  rec.lang = navigator.language.startsWith('es') ? 'en-US' : navigator.language;
-  rec.interimResults = false;
+  rec.lang = 'en-US';
+  rec.interimResults = true;
   rec.maxAlternatives = 1;
+  rec.continuous = true; // Cambiar a continuous para no detener en pausas
 
-  const resultEl = document.getElementById(`result-${i}`);
-  resultEl.textContent = '🎙️ Escuchando... habla ahora (tienes 5 segundos)';
-  resultEl.style.color = '#555';
+  window.activeRecognition = rec;
+  window.activeRecognitionIndex = i;
 
-  // Espera medio segundo antes de activar reconocimiento (mejor detección)
-  setTimeout(() => {
-    rec.start();
-  }, 500);
+  resultEl.textContent = '🎙️ Grabando... presiona "Parar" cuando termines';
+  resultEl.style.color = '#666';
+  
+  // Cambiar botón a "Parar"
+  practiceBtn.textContent = '⏹️ Parar';
+  practiceBtn.style.background = '#dc3545';
+  
+  // Mostrar caja de transcripción
+  transcriptBox.style.display = 'block';
+  transcriptBox.className = 'transcript-box listening';
+  transcriptBox.textContent = '🎤 Esperando...';
 
-  rec.onresult = (e) => {
-    const transcript = e.results[0][0].transcript.toLowerCase().trim();
-    const target = lines[i].english.toLowerCase().replace(/[^a-z\s']/g, '').trim();
-    const score = compareText(target, transcript);
-    showScore(resultEl, score, transcript);
+  let fullTranscript = '';
+
+  rec.onstart = () => {
+    console.log('Recognition started');
+    transcriptBox.textContent = '🎤 Habla ahora...';
   };
 
-  rec.onaudioend = () => {
-    if (resultEl.textContent.includes('Escuchando')) {
-      resultEl.textContent = '⚠️ No se detectó voz. Intenta hablar más fuerte o revisa el micrófono.';
+  rec.onresult = (e) => {
+    let interimTranscript = '';
+    
+    // Procesar todos los resultados
+    for (let i = 0; i < e.results.length; i++) {
+      const transcript = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        fullTranscript += transcript + ' ';
+      } else {
+        interimTranscript += transcript;
+      }
+    }
+    
+    // Mostrar transcripción en tiempo real (estilo karaoke)
+    const displayText = (fullTranscript + interimTranscript).trim();
+    if (displayText) {
+      transcriptBox.innerHTML = '🎤 <span style="color: #0066cc;">' + displayText + '</span>';
+    }
+  };
+
+  rec.onspeechend = () => {
+    // NO detener automáticamente en pausas
+    console.log('Speech pause detected, continuing...');
+  };
+
+  rec.onerror = (e) => {
+    console.log('Recognition error:', e.error);
+    
+    // Restaurar botón
+    practiceBtn.textContent = '🎙️ Practice';
+    practiceBtn.style.background = '#0066cc';
+    window.activeRecognition = null;
+    window.activeRecognitionIndex = null;
+    
+    if(e.error === 'no-speech'){
+      transcriptBox.innerHTML = '⚠️ No se detectó voz. Intenta de nuevo';
+      transcriptBox.style.display = 'block';
+    } else if(e.error === 'not-allowed'){
+      transcriptBox.style.display = 'none';
+      resultEl.textContent = '⚠️ Permiso denegado. Activa el micrófono';
+      resultEl.style.color = 'red';
+    } else if(e.error !== 'aborted'){
+      transcriptBox.style.display = 'none';
+      resultEl.textContent = '❌ Error: ' + e.error;
       resultEl.style.color = 'red';
     }
   };
 
-  rec.onerror = (e) => {
-    resultEl.textContent = `❌ Error: ${e.error === 'no-speech' ? 'No se detectó voz' : e.error}`;
-    resultEl.style.color = 'red';
-  };
-
   rec.onend = () => {
-    recognizing = false;
+    console.log('Recognition ended');
+    transcriptBox.className = 'transcript-box';
+    
+    // Restaurar botón
+    practiceBtn.textContent = '🎙️ Practice';
+    practiceBtn.style.background = '#0066cc';
+    window.activeRecognition = null;
+    window.activeRecognitionIndex = null;
+    
+    // Calcular puntuación si hay transcripción
+    const finalTranscript = fullTranscript.trim();
+    if (finalTranscript) {
+      transcriptBox.innerHTML = '✅ <span style="color: #008000;">' + finalTranscript + '</span>';
+      
+      const target = lines[i].english.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const score = compareText(target, finalTranscript.toLowerCase().trim());
+      showScore(resultEl, score, finalTranscript);
+    }
   };
+
+  try {
+    rec.start();
+  } catch(e) {
+    console.error('Error starting recognition:', e);
+    transcriptBox.style.display = 'none';
+    resultEl.textContent = '⚠️ Error: ' + e.message;
+    resultEl.style.color = 'red';
+    practiceBtn.textContent = '🎙️ Practice';
+    practiceBtn.style.background = '#0066cc';
+    window.activeRecognition = null;
+    window.activeRecognitionIndex = null;
+  }
 }
 
-// función de comparación simple de similitud
 function compareText(original, spoken){
-  const origWords=original.split(/\s+/);
-  const spokenWords=spoken.split(/\s+/);
-  let matches=0;
-  origWords.forEach(w=>{
-    if(spokenWords.includes(w)) matches++;
+  // Normalizar ambos textos
+  const normalize = (text) => {
+    return text.toLowerCase()
+      .replace(/[^\w\s]/g, '') // quitar puntuación y símbolos
+      .replace(/\s+/g, ' ')     // normalizar espacios
+      .trim();
+  };
+  
+  const origNorm = normalize(original);
+  const spokenNorm = normalize(spoken);
+  
+  // Expandir contracciones comunes para mejor coincidencia
+  const expandContractions = (text) => {
+    const contractions = {
+      'im': 'i am',
+      'youre': 'you are',
+      'hes': 'he is',
+      'shes': 'she is',
+      'its': 'it is',
+      'were': 'we are',
+      'theyre': 'they are',
+      'ive': 'i have',
+      'youve': 'you have',
+      'weve': 'we have',
+      'theyve': 'they have',
+      'id': 'i would',
+      'youd': 'you would',
+      'hed': 'he would',
+      'shed': 'she would',
+      'wed': 'we would',
+      'theyd': 'they would',
+      'ill': 'i will',
+      'youll': 'you will',
+      'hell': 'he will',
+      'shell': 'she will',
+      'well': 'we will',
+      'theyll': 'they will',
+      'isnt': 'is not',
+      'arent': 'are not',
+      'wasnt': 'was not',
+      'werent': 'were not',
+      'havent': 'have not',
+      'hasnt': 'has not',
+      'hadnt': 'had not',
+      'wont': 'will not',
+      'wouldnt': 'would not',
+      'dont': 'do not',
+      'doesnt': 'does not',
+      'didnt': 'did not',
+      'cant': 'can not',
+      'couldnt': 'could not',
+      'shouldnt': 'should not',
+      'lets': 'let us',
+      'thats': 'that is',
+      'whats': 'what is',
+      'wheres': 'where is',
+      'whens': 'when is',
+      'whos': 'who is',
+      'hows': 'how is'
+    };
+    
+    let result = text;
+    Object.keys(contractions).forEach(key => {
+      const regex = new RegExp('\\b' + key + '\\b', 'g');
+      result = result.replace(regex, contractions[key]);
+    });
+    return result;
+  };
+  
+  const origExpanded = expandContractions(origNorm);
+  const spokenExpanded = expandContractions(spokenNorm);
+  
+  const origWords = origExpanded.split(' ');
+  const spokenWords = spokenExpanded.split(' ');
+  
+  // Contar palabras que coinciden (en cualquier orden pero preferir orden correcto)
+  let matches = 0;
+  let orderBonus = 0;
+  const spokenCopy = [...spokenWords];
+  
+  origWords.forEach((origWord, origIndex) => {
+    const index = spokenCopy.findIndex((spWord, spIndex) => {
+      if(spWord === origWord) {
+        // Bonus si está en posición similar
+        if(Math.abs(origIndex - spIndex) <= 2) orderBonus++;
+        return true;
+      }
+      return false;
+    });
+    
+    if(index !== -1){
+      matches++;
+      spokenCopy.splice(index, 1);
+    }
   });
-  return Math.round((matches/origWords.length)*100);
+  
+  // Calcular score
+  let score = Math.round((matches / origWords.length) * 100);
+  
+  // Bonus por orden correcto
+  if(orderBonus > origWords.length * 0.5){
+    score = Math.min(100, score + 3);
+  }
+  
+  // Bonus por longitud similar
+  const lengthRatio = Math.min(spokenWords.length, origWords.length) / Math.max(spokenWords.length, origWords.length);
+  if(lengthRatio > 0.85 && score > 70){
+    score = Math.min(100, score + 5);
+  }
+  
+  return score;
 }
 
-function showScore(el,score,transcript){
-  let color,feedback;
-  if(score>85){ color='green'; feedback='Excelente 👍'; }
-  else if(score>60){ color='orange'; feedback='Bien 😊'; }
-  else { color='red'; feedback='Necesita práctica 🗣️'; }
-  el.innerHTML=`${feedback} (${score}%)<br><small>Tú dijiste: "${transcript}"</small>`;
-  el.style.color=color;
+function showScore(el, score, transcript){
+  let color, feedback;
+  if(score >= 80){ 
+    color = 'green'; 
+    feedback = '✅ Excelente'; 
+  } else if(score >= 60){ 
+    color = 'orange'; 
+    feedback = '👍 Bien'; 
+  } else if(score >= 40){
+    color = 'orange';
+    feedback = '📝 Regular';
+  } else { 
+    color = 'red'; 
+    feedback = '📢 Necesita práctica'; 
+  }
+  el.innerHTML = feedback + ' (' + score + '%)<br><small>Dijiste: "' + transcript + '"</small>';
+  el.style.color = color;
 }
 </script>
 </body>
