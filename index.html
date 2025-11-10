@@ -236,7 +236,7 @@ function practiceLine(i){
   rec.lang = 'en-US';
   rec.interimResults = true;
   rec.maxAlternatives = 1;
-  rec.continuous = true; // Cambiar a continuous para no detener en pausas
+  rec.continuous = true;
 
   window.activeRecognition = rec;
   window.activeRecognitionIndex = i;
@@ -254,26 +254,33 @@ function practiceLine(i){
   transcriptBox.textContent = '🎤 Esperando...';
 
   let fullTranscript = '';
+  let lastProcessedIndex = 0;
 
   rec.onstart = () => {
     console.log('Recognition started');
     transcriptBox.textContent = '🎤 Habla ahora...';
+    fullTranscript = '';
+    lastProcessedIndex = 0;
   };
 
   rec.onresult = (e) => {
-    // Reiniciar transcripts
     let interimTranscript = '';
-    let finalTranscript = '';
+    let newFinalTranscript = '';
     
-    // Procesar SOLO los resultados nuevos para evitar duplicados
-    for (let i = e.resultIndex; i < e.results.length; i++) {
+    // Procesar solo resultados desde el último índice procesado
+    for (let i = lastProcessedIndex; i < e.results.length; i++) {
       const transcript = e.results[i][0].transcript;
       if (e.results[i].isFinal) {
-        fullTranscript += transcript + ' ';
-        finalTranscript = fullTranscript;
+        newFinalTranscript += transcript + ' ';
+        lastProcessedIndex = i + 1;
       } else {
         interimTranscript = transcript;
       }
+    }
+    
+    // Agregar nuevo texto final al acumulado
+    if(newFinalTranscript){
+      fullTranscript += newFinalTranscript;
     }
     
     // Mostrar transcripción en tiempo real (estilo karaoke)
